@@ -3,23 +3,6 @@ import axios from 'axios';
 
 const router = Router();
 
-// MyMemory API language mapping
-const langMap = {
-  'auto': 'auto',
-  'en': 'en',
-  'hi': 'hi',
-  'es': 'es',
-  'fr': 'fr',
-  'de': 'de',
-  'it': 'it',
-  'pt': 'pt',
-  'ru': 'ru',
-  'ja': 'ja',
-  'ko': 'ko',
-  'zh': 'zh-CN',
-  'ar': 'ar'
-};
-
 // Get available languages
 router.get('/languages', async (req, res) => {
   res.json({
@@ -48,22 +31,18 @@ router.post('/', async (req, res) => {
     
     console.log('Translation request:', { text, from, to });
 
-    // Validate input
+    // Validate
     if (!text || !to) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Missing required fields: text and to' 
+        message: 'Missing required fields' 
       });
     }
 
-    // Map language codes
-    const sourceLang = from && from !== 'auto' ? (langMap[from] || from) : '';
-    const targetLang = langMap[to] || to;
-    
-    // Build language pair for MyMemory
-    const langPair = sourceLang ? `${sourceLang}|${targetLang}` : targetLang;
+    // Build langpair for MyMemory (format: "en|hi" or just "hi" for auto-detect)
+    const langPair = from && from !== 'auto' ? `${from}|${to}` : to;
 
-    console.log('Calling MyMemory API with langpair:', langPair);
+    console.log('Calling MyMemory with langpair:', langPair);
 
     // Call MyMemory API
     const response = await axios.get('https://api.mymemory.translated.net/get', {
@@ -74,7 +53,7 @@ router.post('/', async (req, res) => {
       timeout: 15000
     });
 
-    console.log('MyMemory response:', response.data);
+    console.log('MyMemory response status:', response.data.responseStatus);
 
     // Check response
     if (response.data && response.data.responseData && response.data.responseData.translatedText) {
@@ -83,19 +62,20 @@ router.post('/', async (req, res) => {
         translatedText: response.data.responseData.translatedText 
       });
     } else {
+      console.error('Invalid MyMemory response:', response.data);
       return res.status(500).json({ 
         success: false, 
-        message: 'Translation API returned invalid response' 
+        message: 'Translation failed' 
       });
     }
 
   } catch (error) {
     console.error('Translation error:', error.message);
-    console.error('Error details:', error.response?.data || error);
+    console.error('Error response:', error.response?.data);
     
     return res.status(500).json({ 
       success: false, 
-      message: 'Translation service error: ' + error.message 
+      message: error.response?.data?.responseDetails || 'Translation service error'
     });
   }
 });
