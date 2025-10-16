@@ -3,31 +3,30 @@ import axios from 'axios';
 
 const router = Router();
 
-// Language mapping for MyMemory API
+// MyMemory API language mapping
 const langMap = {
   'auto': 'auto',
-  'en': 'en-US',
-  'hi': 'hi-IN',
-  'bn': 'bn-BD',
-  'es': 'es-ES',
-  'fr': 'fr-FR',
-  'de': 'de-DE',
-  'it': 'it-IT',
-  'pt': 'pt-PT',
-  'ru': 'ru-RU',
-  'ja': 'ja-JP',
-  'ko': 'ko-KR',
+  'en': 'en',
+  'hi': 'hi',
+  'es': 'es',
+  'fr': 'fr',
+  'de': 'de',
+  'it': 'it',
+  'pt': 'pt',
+  'ru': 'ru',
+  'ja': 'ja',
+  'ko': 'ko',
   'zh': 'zh-CN',
-  'ar': 'ar-SA'
+  'ar': 'ar'
 };
 
-router.get('/languages', async (_req, res) => {
+// Get available languages
+router.get('/languages', async (req, res) => {
   res.json({
     success: true,
     languages: [
       { code: 'en', name: 'English' },
       { code: 'hi', name: 'Hindi' },
-      { code: 'bn', name: 'Bengali' },
       { code: 'es', name: 'Spanish' },
       { code: 'fr', name: 'French' },
       { code: 'de', name: 'German' },
@@ -42,18 +41,32 @@ router.get('/languages', async (_req, res) => {
   });
 });
 
+// Translate text
 router.post('/', async (req, res) => {
   try {
     const { text, from, to } = req.body;
+    
+    console.log('Translation request:', { text, from, to });
+
+    // Validate input
     if (!text || !to) {
-      return res.status(400).json({ success: false, message: 'text and to are required' });
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing required fields: text and to' 
+      });
     }
 
-    const sourceLang = from && from !== 'auto' ? langMap[from] || from : 'auto';
+    // Map language codes
+    const sourceLang = from && from !== 'auto' ? (langMap[from] || from) : '';
     const targetLang = langMap[to] || to;
-    const langPair = sourceLang === 'auto' ? targetLang : `${sourceLang}|${targetLang}`;
+    
+    // Build language pair for MyMemory
+    const langPair = sourceLang ? `${sourceLang}|${targetLang}` : targetLang;
 
-    const { data } = await axios.get('https://api.mymemory.translated.net/get', {
+    console.log('Calling MyMemory API with langpair:', langPair);
+
+    // Call MyMemory API
+    const response = await axios.get('https://api.mymemory.translated.net/get', {
       params: {
         q: text,
         langpair: langPair
@@ -61,14 +74,29 @@ router.post('/', async (req, res) => {
       timeout: 15000
     });
 
-    if (data.responseStatus === 200 && data.responseData) {
-      res.json({ success: true, translatedText: data.responseData.translatedText });
+    console.log('MyMemory response:', response.data);
+
+    // Check response
+    if (response.data && response.data.responseData && response.data.responseData.translatedText) {
+      return res.json({ 
+        success: true, 
+        translatedText: response.data.responseData.translatedText 
+      });
     } else {
-      res.status(500).json({ success: false, message: 'Translation failed' });
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Translation API returned invalid response' 
+      });
     }
-  } catch (err) {
-    console.error('Translation error:', err.message);
-    res.status(500).json({ success: false, message: 'Translation service unavailable' });
+
+  } catch (error) {
+    console.error('Translation error:', error.message);
+    console.error('Error details:', error.response?.data || error);
+    
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Translation service error: ' + error.message 
+    });
   }
 });
 
