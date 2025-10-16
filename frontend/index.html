@@ -1,12 +1,133 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Multilingual Assistance Platform</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language & Legal Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landing-page" class="page active">
+        <div class="container">
+            <div class="hero">
+                <div class="globe-icon">🌍</div>
+                <h1 class="hero-title">Language & Legal Assistant</h1>
+                <p class="hero-subtitle">Break language barriers with instant translation and get legal help based on Indian Constitution</p>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Instant Translation</h3>
+                    <p>Translate text between 12+ languages</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎤</div>
+                    <h3>Voice Support</h3>
+                    <p>Speak naturally and get instant translations</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Real-time</h3>
+                    <p>See translations as you type</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Simple & Fast</h3>
+                    <p>No registration required</p>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="showLanguageSelect()">
+                Get Started - Select Your Language
+            </button>
+            <p class="guest-text">No registration required - Start instantly</p>
+        </div>
+    </div>
+
+    <!-- Language Selection Page -->
+    <div id="language-page" class="page">
+        <div class="container">
+            <div class="header-badge">
+                <span class="badge-icon">🌍</span>
+                <span class="badge-text">MultiLingual Assistant</span>
+            </div>
+            
+            <h2 class="page-title">Choose Your Preferred Language</h2>
+            <p class="page-subtitle">Select your primary language to personalize your experience. You can change this anytime in settings.</p>
+            
+            <div class="language-hint">
+                <span>🗣️</span>
+                <span>Select Language / भाषा चुनें / Seleccionar idioma</span>
+            </div>
+            <p class="hint-text">Click on your preferred language to continue</p>
+
+            <div class="language-grid" id="language-grid">
+                <!-- Languages will be populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Translation Page -->
+    <div id="translate-page" class="page">
+        <div class="container">
+            <button class="btn-back" onclick="showLanguageSelect()">
+                ← Back to Language Selection
+            </button>
+
+            <h2 class="page-title">🌍 Translation Tool</h2>
+            <p class="page-subtitle">Translate instantly as you type</p>
+
+            <div class="translation-card">
+                <div class="translation-grid">
+                    <!-- Source -->
+                    <div class="translation-column">
+                        <label class="input-label">From</label>
+                        <select id="source-lang" class="lang-select">
+                            <option value="auto">Auto Detect</option>
+                        </select>
+                        <textarea 
+                            id="source-text" 
+                            class="translation-textarea"
+                            rows="10"
+                            placeholder="Enter text to translate..."></textarea>
+                        <div class="actions">
+                            <button class="icon-btn" onclick="speak('source')" title="Listen">🔊</button>
+                            <button class="icon-btn" onclick="copy('source')" title="Copy">📋</button>
+                        </div>
+                    </div>
+
+                    <!-- Swap Button -->
+                    <div class="swap-container">
+                        <button class="swap-btn" onclick="swapLanguages()" title="Swap languages">⟲</button>
+                    </div>
+
+                    <!-- Target -->
+                    <div class="translation-column">
+                        <label class="input-label">To</label>
+                        <select id="target-lang" class="lang-select">
+                        </select>
+                        <textarea 
+                            id="target-text" 
+                            class="translation-textarea readonly"
+                            rows="10"
+                            readonly
+                            placeholder="Translation will appear here..."></textarea>
+                        <div class="actions">
+                            <button class="icon-btn" onclick="speak('target')" title="Listen">🔊</button>
+                            <button class="icon-btn" onclick="copy('target')" title="Copy">📋</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="debug-info">
+                <small>API Status: <span id="api-status">Checking...</span></small>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
 </html>
