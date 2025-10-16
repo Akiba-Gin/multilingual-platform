@@ -1,33 +1,37 @@
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { connectDB } from './db.js';
+import connectDB from './db.js';
 import translateRoutes from './routes/translate.js';
-import topicRoutes from './routes/topics.js';
+import topicsRoutes from './routes/topics.js';
 
 const app = express();
 
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN?.split(',') || '*'
-}));
+// CORS - Allow ALL origins (simplest solution)
+app.use(cors());
+
+// Or if you want to be specific, use this instead:
+// app.use(cors({
+//   origin: '*',
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//   allowedHeaders: ['Content-Type']
+// }));
+
 app.use(express.json());
 
-app.get('/', (_req, res) => {
-  res.json({ status: 'ok', service: 'Multilingual API' });
+// Health check
+app.get('/', (req, res) => {
+  res.json({ status: 'API is running', timestamp: new Date() });
 });
 
+// Routes
 app.use('/api/translate', translateRoutes);
-app.use('/api/topics', topicRoutes);
+app.use('/api/topics', topicsRoutes);
 
-const PORT = process.env.PORT || 10000;
+// Connect to MongoDB
+connectDB();
 
-const start = async () => {
-  if (process.env.MONGODB_URI) {
-    await connectDB(process.env.MONGODB_URI);
-  } else {
-    console.warn('MONGODB_URI not set; topics endpoints will fail to connect');
-  }
-  app.listen(PORT, () => console.log(`API on :${PORT}`));
-};
+const PORT = process.env.PORT || 5000;
 
-start();
+app.listen(PORT, () => {
+  console.log(`API on :${PORT}`);
+});
